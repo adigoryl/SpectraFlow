@@ -99,9 +99,8 @@ Afterwards, modify any variables or paths in the script according to your cluste
 ./run_spectraflow.sh
 ```
 
-### [Code Documentation](https://github.com/adigoryl)
-
-
+### Documentation
+View code [documentation](https://adigoryl.github.io/SpectraFlow/Docs/build/html/py-modindex.html)
 
 ### Contributing
 
