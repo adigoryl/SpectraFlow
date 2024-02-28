@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>pipeline package &#8212; SpectraFlow Feb 2024 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=61cd365c" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=12dfc556" />
+    <script src="_static/documentation_options.js?v=a448a05f"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="pipeline-package">
+<h1>pipeline package<a class="headerlink" href="#pipeline-package" title="Link to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-pipeline.DataHandler">
+<span id="pipeline-datahandler-module"></span><h2>pipeline.DataHandler module<a class="headerlink" href="#module-pipeline.DataHandler" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pipeline.DataHandler.DataHandler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pipeline.DataHandler.</span></span><span class="sig-name descname"><span class="pre">DataHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_classes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipeline/DataHandler.html#DataHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pipeline.DataHandler.DataHandler" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pipeline.DataHandler.DataHandler.calculate_metrics">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">calculate_metrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipeline/DataHandler.html#DataHandler.calculate_metrics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pipeline.DataHandler.DataHandler.calculate_metrics" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pipeline.DataHandler.DataHandler.create_batched_datasets">
+<span class="sig-name descname"><span class="pre">create_batched_datasets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_train_scaled</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_train</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_val_scaled</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_val</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipeline/DataHandler.html#DataHandler.create_batched_datasets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pipeline.DataHandler.DataHandler.create_batched_datasets" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pipeline.DataHandler.DataHandler.ensure_directories">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ensure_directories</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">paths</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipeline/DataHandler.html#DataHandler.ensure_directories"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pipeline.DataHandler.DataHandler.ensure_directories" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pipeline.DataHandler.DataHandler.load_dataset">
+<span class="sig-name descname"><span class="pre">load_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">datasets_to_combine</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipeline/DataHandler.html#DataHandler.load_dataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pipeline.DataHandler.DataHandler.load_dataset" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pipeline.DataHandler.DataHandler.pickle_dump">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pickle_dump</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipeline/DataHandler.html#DataHandler.pickle_dump"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pipeline.DataHandler.DataHandler.pickle_dump" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pipeline.DataHandler.DataHandler.prepare_data_folds">
+<span class="sig-name descname"><span class="pre">prepare_data_folds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">datasets_to_combine</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_cv_folds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_cv_repetitions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scaler_obj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipeline/DataHandler.html#DataHandler.prepare_data_folds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pipeline.DataHandler.DataHandler.prepare_data_folds" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pipeline.DataHandler.DataHandler.reduce_data_to_specific_features">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reduce_data_to_specific_features</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batched_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selected_indices_list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipeline/DataHandler.html#DataHandler.reduce_data_to_specific_features"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pipeline.DataHandler.DataHandler.reduce_data_to_specific_features" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pipeline.DataHandler.DataHandler.transform">
+<span class="sig-name descname"><span class="pre">transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipeline/DataHandler.html#DataHandler.transform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pipeline.DataHandler.DataHandler.transform" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pipeline.FeatureSelector">
+<span id="pipeline-featureselector-module"></span><h2>pipeline.FeatureSelector module<a class="headerlink" href="#module-pipeline.FeatureSelector" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pipeline.FeatureSelector.FeatureSelector">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pipeline.FeatureSelector.</span></span><span class="sig-name descname"><span class="pre">FeatureSelector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_handler</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_select_class</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_eval_class</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs_args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mlp_args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_epochs_select</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_epochs_evaluator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_selected_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipeline/FeatureSelector.html#FeatureSelector"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pipeline.FeatureSelector.FeatureSelector" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pipeline.FeatureSelector.FeatureSelector.compile_model">
+<span class="sig-name descname"><span class="pre">compile_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metrics</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipeline/FeatureSelector.html#FeatureSelector.compile_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pipeline.FeatureSelector.FeatureSelector.compile_model" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pipeline.FeatureSelector.FeatureSelector.feature_selection_and_eval">
+<span class="sig-name descname"><span class="pre">feature_selection_and_eval</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_num</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipeline/FeatureSelector.html#FeatureSelector.feature_selection_and_eval"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pipeline.FeatureSelector.FeatureSelector.feature_selection_and_eval" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pipeline.LOORFE">
+<span id="pipeline-loorfe-module"></span><h2>pipeline.LOORFE module<a class="headerlink" href="#module-pipeline.LOORFE" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pipeline.LOORFE.LeaveOneOutRecursiveFeatureElimination">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pipeline.LOORFE.</span></span><span class="sig-name descname"><span class="pre">LeaveOneOutRecursiveFeatureElimination</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_handler</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_eval_class</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_classes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipeline/LOORFE.html#LeaveOneOutRecursiveFeatureElimination"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pipeline.LOORFE.LeaveOneOutRecursiveFeatureElimination" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Implements an unbiased Leave-One-Out Recursive Feature Elimination (LOO-RFE) approach for
+feature selection in machine learning models. This class leverages cross-validation (CV)
+splits to generate feature rankings that exclude the influence of the test subject, thereby
+providing an unbiased evaluation of feature importance.</p>
+<p>The LOO-RFE method iteratively eliminates features based on their impact on model performance,
+utilizing a unique approach to ensure that the evaluation of each feature’s importance is not
+biased by the inclusion of the test subject’s data in the training set. This is achieved by
+constructing feature rankings from subsets of data where the test subject was excluded, using
+these unbiased rankings to identify the most relevant features for model prediction.</p>
+<p>Parameters:
+- data_handler: An object responsible for managing data operations such as scaling and batching,</p>
+<blockquote>
+<div><p>ensuring that data is appropriately preprocessed for model training and evaluation.</p>
+</div></blockquote>
+<ul class="simple">
+<li><dl class="simple">
+<dt>model_eval_class: A class that provides methods for model compilation, fitting, and evaluation,</dt><dd><p>designed to work with variable numbers of features and target classes.</p>
+</dd>
+</dl>
+</li>
+<li><p>num_classes (int): The number of target classes in the dataset, defaulting to 2 for binary classification.</p></li>
+<li><p>seed (int, optional): A random seed to ensure reproducibility of results across runs.</p></li>
+</ul>
+<p>Methods:
+- get_keys_where_value_exists: Retrieves keys from a list of dictionaries where a specified value is present,</p>
+<blockquote>
+<div><p>aiding in the identification of CV splits relevant to each test subject.</p>
+</div></blockquote>
+<ul class="simple">
+<li><dl class="simple">
+<dt>get_top_features: Extracts top features based on their occurrence and average position in ordered rankings,</dt><dd><p>utilizing an unbiased ranking list compiled from CV splits excluding the test subject.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>evaluate: Conducts the LOO-RFE evaluation, training models on subsets of features and assessing their performance</dt><dd><p>in an unbiased manner, guided by the principle of excluding the test subject’s data from feature ranking
+generation.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>This class provides a robust framework for feature selection by prioritizing the most impactful features
+for model performance while ensuring the evaluation process is unbiased by the test data. The approach
+enhances the generalizability and reliability of the selected features, making it a valuable tool for
+machine learning tasks that require careful feature selection and validation.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pipeline.LOORFE.LeaveOneOutRecursiveFeatureElimination.evaluate">
+<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_selected_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_num</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subs_in_val_per_sample</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selected_feature_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scaler_obj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipeline/LOORFE.html#LeaveOneOutRecursiveFeatureElimination.evaluate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pipeline.LOORFE.LeaveOneOutRecursiveFeatureElimination.evaluate" title="Link to this definition">¶</a></dt>
+<dd><p>Performs the LOO-RFE evaluation process, training models on subsets of features and assessing their performance.</p>
+<p>Parameters:
+- data: The dataset containing features and labels.
+- train_index: Indices for the training data.
+- test_index: Indices for the test data.
+- batch_size: The size of batches for training and testing.
+- num_selected_features: The number of features to select in the current iteration.
+- sample_num: Identifier for the current sample or iteration.
+- subs_in_val_per_sample: Subsets involved in validation for each sample.
+- selected_feature_indices: Indices of features selected in the current iteration.
+- scaler_obj: An instance of a scaler for data normalization.
+- save_path: Path where evaluation results and plots are saved.</p>
+<p>Returns:
+- A DataFrame containing evaluation results across different feature subsets.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pipeline.LOORFE.LeaveOneOutRecursiveFeatureElimination.get_keys_where_value_exists">
+<span class="sig-name descname"><span class="pre">get_keys_where_value_exists</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dict_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipeline/LOORFE.html#LeaveOneOutRecursiveFeatureElimination.get_keys_where_value_exists"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pipeline.LOORFE.LeaveOneOutRecursiveFeatureElimination.get_keys_where_value_exists" title="Link to this definition">¶</a></dt>
+<dd><p>Finds keys in a list of dictionaries where a specified value exists.</p>
+<p>Parameters:
+- dict_list (list of dict): The list of dictionaries to search.
+- X (int): The value to search for within the dictionary values.</p>
+<p>Returns:
+- keys (list of str): A list of keys where the specified value is present among the values.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pipeline.LOORFE.LeaveOneOutRecursiveFeatureElimination.get_top_features">
+<span class="sig-name descname"><span class="pre">get_top_features</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ordered_rankings</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ascending</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_features</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipeline/LOORFE.html#LeaveOneOutRecursiveFeatureElimination.get_top_features"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pipeline.LOORFE.LeaveOneOutRecursiveFeatureElimination.get_top_features" title="Link to this definition">¶</a></dt>
+<dd><p>Identifies top features based on their occurrence and average position in ordered rankings.</p>
+<p>Parameters:
+- ordered_rankings (list of lists): A list where each sublist represents feature rankings in an iteration.
+- ascending (bool): Determines the sorting order of mean positions. Defaults to False.
+- n_features (int, optional): Specifies the number of top features to select. Defaults to selecting all.</p>
+<p>Returns:
+- top_features (DataFrame): A DataFrame containing statistics of top features including frequency and position metrics.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="pipeline-parallel-spectraflow-module">
+<h2>pipeline.parallel_spectraflow module<a class="headerlink" href="#pipeline-parallel-spectraflow-module" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-pipeline">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-pipeline" title="Link to this heading">¶</a></h2>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">SpectraFlow</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">SpectraFlow</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Adrian Wesek.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="_sources/pipeline.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

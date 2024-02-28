@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>plots package &#8212; SpectraFlow Feb 2024 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=61cd365c" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=12dfc556" />
+    <script src="_static/documentation_options.js?v=a448a05f"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="plots-package">
+<h1>plots package<a class="headerlink" href="#plots-package" title="Link to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-plots.live_learning">
+<span id="plots-live-learning-module"></span><h2>plots.live_learning module<a class="headerlink" href="#module-plots.live_learning" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="plots.live_learning.PlotLearning">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">plots.live_learning.</span></span><span class="sig-name descname"><span class="pre">PlotLearning</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">title</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_save_as</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plots/live_learning.html#PlotLearning"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#plots.live_learning.PlotLearning" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Callback</span></code></p>
+<p>Callback to plot the learning curves of the model during training.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="plots.live_learning.PlotLearning.on_epoch_end">
+<span class="sig-name descname"><span class="pre">on_epoch_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">epoch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plots/live_learning.html#PlotLearning.on_epoch_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#plots.live_learning.PlotLearning.on_epoch_end" title="Link to this definition">¶</a></dt>
+<dd><p>Called at the end of an epoch.</p>
+<p>Subclasses should override for any actions to run. This function should
+only be called during TRAIN mode.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>epoch</strong> – Integer, index of epoch.</p></li>
+<li><p><strong>logs</strong> – Dict, metric results for this training epoch, and for the
+validation epoch if validation is performed. Validation result
+keys are prefixed with <cite>val_</cite>. For training epoch, the values of
+the <cite>Model</cite>’s metrics are returned. Example:
+<cite>{‘loss’: 0.2, ‘accuracy’: 0.7}</cite>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="plots.live_learning.PlotLearning.on_train_begin">
+<span class="sig-name descname"><span class="pre">on_train_begin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plots/live_learning.html#PlotLearning.on_train_begin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#plots.live_learning.PlotLearning.on_train_begin" title="Link to this definition">¶</a></dt>
+<dd><p>Called at the beginning of training.</p>
+<p>Subclasses should override for any actions to run.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>logs</strong> – Dict. Currently no data is passed to this argument for this
+method but that may change in the future.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="plots.live_learning.PlotLearning.on_train_end">
+<span class="sig-name descname"><span class="pre">on_train_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plots/live_learning.html#PlotLearning.on_train_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#plots.live_learning.PlotLearning.on_train_end" title="Link to this definition">¶</a></dt>
+<dd><p>Called at the end of training.</p>
+<p>Subclasses should override for any actions to run.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>logs</strong> – Dict. Currently the output of the last call to
+<cite>on_epoch_end()</cite> is passed to this argument for this method but
+that may change in the future.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-plots.plots">
+<span id="plots-plots-module"></span><h2>plots.plots module<a class="headerlink" href="#module-plots.plots" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="plots.plots.average_jaccard_similarity">
+<span class="sig-prename descclassname"><span class="pre">plots.plots.</span></span><span class="sig-name descname"><span class="pre">average_jaccard_similarity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rankings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/plots/plots.html#average_jaccard_similarity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#plots.plots.average_jaccard_similarity" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the average Jaccard similarity and standard deviation for a list of rankings</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>rankings</strong> (<em>List</em><em>[</em><em>List</em><em>[</em><em>str</em><em>]</em><em>]</em>) – List of rankings, where each ranking is a list of features</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Average Jaccard similarity and standard deviation across all pairs of rankings</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[float, float]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="plots.plots.create_stats_df">
+<span class="sig-prename descclassname"><span class="pre">plots.plots.</span></span><span class="sig-name descname"><span class="pre">create_stats_df</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">unique_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index_positions</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plots/plots.html#create_stats_df"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#plots.plots.create_stats_df" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="plots.plots.extract_values">
+<span class="sig-prename descclassname"><span class="pre">plots.plots.</span></span><span class="sig-name descname"><span class="pre">extract_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plots/plots.html#extract_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#plots.plots.extract_values" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="plots.plots.feature_ranking_plot">
+<span class="sig-prename descclassname"><span class="pre">plots.plots.</span></span><span class="sig-name descname"><span class="pre">feature_ranking_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">top_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bins_to_names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_open</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plots/plots.html#feature_ranking_plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#plots.plots.feature_ranking_plot" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="plots.plots.generate_plots">
+<span class="sig-prename descclassname"><span class="pre">plots.plots.</span></span><span class="sig-name descname"><span class="pre">generate_plots</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">datasets_root</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">denoised_dataset_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">computations_root</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_open</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plots/plots.html#generate_plots"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#plots.plots.generate_plots" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="plots.plots.get_index_positions">
+<span class="sig-prename descclassname"><span class="pre">plots.plots.</span></span><span class="sig-name descname"><span class="pre">get_index_positions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plots/plots.html#get_index_positions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#plots.plots.get_index_positions" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="plots.plots.jaccard_similarity">
+<span class="sig-prename descclassname"><span class="pre">plots.plots.</span></span><span class="sig-name descname"><span class="pre">jaccard_similarity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">list1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">list2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/plots/plots.html#jaccard_similarity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#plots.plots.jaccard_similarity" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate Jaccard Similarity between two lists.</p>
+<p>The Jaccard similarity coefficient measures the size of the intersection divided by the size of the union of two sets.
+The resulting number is a scalar value representing the overall similarity (or stability) of the feature selection
+reflected by the different rankings. Note that the Jaccard similarity ranges from 0 to 1, where 1 signifies that
+the rankings are identical, and 0 signifies that the rankings do not share any features.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>list1</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – First list of features</p></li>
+<li><p><strong>list2</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – Second list of features</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Jaccard similarity between the two lists</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="plots.plots.load_csv_file">
+<span class="sig-prename descclassname"><span class="pre">plots.plots.</span></span><span class="sig-name descname"><span class="pre">load_csv_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plots/plots.html#load_csv_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#plots.plots.load_csv_file" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="plots.plots.load_pickle_file">
+<span class="sig-prename descclassname"><span class="pre">plots.plots.</span></span><span class="sig-name descname"><span class="pre">load_pickle_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plots/plots.html#load_pickle_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#plots.plots.load_pickle_file" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="plots.plots.plot_ppm_with_selection">
+<span class="sig-prename descclassname"><span class="pre">plots.plots.</span></span><span class="sig-name descname"><span class="pre">plot_ppm_with_selection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pca_ds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">top_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bins_to_names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ppm_chart_title</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_open</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_median</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plots/plots.html#plot_ppm_with_selection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#plots.plots.plot_ppm_with_selection" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="plots.plots.plot_ppm_with_selection_paper_modified">
+<span class="sig-prename descclassname"><span class="pre">plots.plots.</span></span><span class="sig-name descname"><span class="pre">plot_ppm_with_selection_paper_modified</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pca_ds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">top_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bins_to_names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ppm_chart_title</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_open</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_median</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plots/plots.html#plot_ppm_with_selection_paper_modified"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#plots.plots.plot_ppm_with_selection_paper_modified" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="plots.plots.plot_pred_acc_and_sim_for_RFE">
+<span class="sig-prename descclassname"><span class="pre">plots.plots.</span></span><span class="sig-name descname"><span class="pre">plot_pred_acc_and_sim_for_RFE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ordered_ranking</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_open</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric_dict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'rfe_val_auc_shallow':</span> <span class="pre">'AUC</span> <span class="pre">Accuracy'}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plots/plots.html#plot_pred_acc_and_sim_for_RFE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#plots.plots.plot_pred_acc_and_sim_for_RFE" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="plots.plots.plot_pred_acc_multimetric_RFE">
+<span class="sig-prename descclassname"><span class="pre">plots.plots.</span></span><span class="sig-name descname"><span class="pre">plot_pred_acc_multimetric_RFE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ordered_ranking</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_open</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric_dict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'rfe_val_auc_shallow':</span> <span class="pre">'AUC</span> <span class="pre">Accuracy'}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plots/plots.html#plot_pred_acc_multimetric_RFE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#plots.plots.plot_pred_acc_multimetric_RFE" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="plots.plots.ranking_stats_to_txt">
+<span class="sig-prename descclassname"><span class="pre">plots.plots.</span></span><span class="sig-name descname"><span class="pre">ranking_stats_to_txt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">top_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bins_to_names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plots/plots.html#ranking_stats_to_txt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#plots.plots.ranking_stats_to_txt" title="Link to this definition">¶</a></dt>
+<dd><p>Process a DataFrame: add binned metabolites, binned metabolite range, sort by mean, and rename columns.</p>
+<p>Parameters:
+top_features (pandas.DataFrame): Input DataFrame.
+bins_to_names (dict): Dictionary for mapping bin numbers to feature names.</p>
+<p>Returns:
+pandas.DataFrame: The processed DataFrame.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="plots.plots.sort_paths_by_epoch">
+<span class="sig-prename descclassname"><span class="pre">plots.plots.</span></span><span class="sig-name descname"><span class="pre">sort_paths_by_epoch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">paths</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plots/plots.html#sort_paths_by_epoch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#plots.plots.sort_paths_by_epoch" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-plots.ppm_selected">
+<span id="plots-ppm-selected-module"></span><h2>plots.ppm_selected module<a class="headerlink" href="#module-plots.ppm_selected" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="plots.ppm_selected.plot_ppm_with_selection">
+<span class="sig-prename descclassname"><span class="pre">plots.ppm_selected.</span></span><span class="sig-name descname"><span class="pre">plot_ppm_with_selection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selected_feature_indicies</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ppm_chart_title</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SAVE_PATH</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_median</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.005</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">display_top_n_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plots/ppm_selected.html#plot_ppm_with_selection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#plots.ppm_selected.plot_ppm_with_selection" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-plots">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-plots" title="Link to this heading">¶</a></h2>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">SpectraFlow</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">SpectraFlow</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Adrian Wesek.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="_sources/plots.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

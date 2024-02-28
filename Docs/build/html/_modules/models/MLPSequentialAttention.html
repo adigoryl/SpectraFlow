@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>models.MLPSequentialAttention &#8212; SpectraFlow Feb 2024 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=61cd365c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../_static/documentation_options.js?v=a448a05f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for models.MLPSequentialAttention</h1><div class="highlight"><pre>
+<span></span><span class="c1"># coding=utf-8</span>
+<span class="c1"># Copyright 2022 The Google Research Authors.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Implements a machine learning model that combines a Multi-Layer Perceptron (MLP) with Sequential Attention</span>
+<span class="sd">for feature selection. This approach aims to enhance model performance by focusing on the most relevant input features</span>
+<span class="sd">over a series of training steps.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">models.MLP</span> <span class="kn">import</span> <span class="n">MLPModel2</span>  <span class="c1"># Import base MLP model class</span>
+<span class="kn">from</span> <span class="nn">models.SequentialAttention</span> <span class="kn">import</span> <span class="n">SequentialAttention</span>  <span class="c1"># Import Sequential Attention mechanism</span>
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>  <span class="c1"># Import TensorFlow for model building and operations</span>
+
+
+<div class="viewcode-block" id="SequentialAttentionModel">
+<a class="viewcode-back" href="../../models.html#models.MLPSequentialAttention.SequentialAttentionModel">[docs]</a>
+<span class="k">class</span> <span class="nc">SequentialAttentionModel</span><span class="p">(</span><span class="n">MLPModel2</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Defines an MLP model enhanced with a Sequential Attention mechanism for dynamic feature selection during training.</span>
+
+<span class="sd">    Inherits from MLPModel2, extending its functionality with the Sequential Attention mechanism to select a subset</span>
+<span class="sd">    of input features based on their importance to the prediction task.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">num_inputs</span><span class="p">,</span>
+            <span class="n">num_inputs_to_select</span><span class="p">,</span>
+            <span class="n">num_train_steps</span><span class="p">,</span>
+            <span class="n">num_inputs_to_select_per_step</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Initializes the Sequential Attention Model with specific parameters for feature selection.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      num_inputs (int): Total number of input features.</span>
+<span class="sd">      num_inputs_to_select (int): Number of input features to select for the model to consider.</span>
+<span class="sd">      num_train_steps (int): Total number of training steps, used to adjust the feature selection process over time.</span>
+<span class="sd">      num_inputs_to_select_per_step (int): Number of features to select at each selection step.</span>
+<span class="sd">      **kwargs: Additional keyword arguments passed to the MLPModel2 initializer.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">SequentialAttentionModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>  <span class="c1"># Initialize the base MLP model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">seqatt</span> <span class="o">=</span> <span class="n">SequentialAttention</span><span class="p">(</span>
+            <span class="n">num_candidates</span><span class="o">=</span><span class="n">num_inputs</span><span class="p">,</span>
+            <span class="n">num_candidates_to_select</span><span class="o">=</span><span class="n">num_inputs_to_select</span><span class="p">,</span>
+            <span class="n">num_candidates_to_select_per_step</span><span class="o">=</span><span class="n">num_inputs_to_select_per_step</span><span class="p">,</span>
+        <span class="p">)</span>  <span class="c1"># Initialize Sequential Attention mechanism</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_train_steps</span> <span class="o">=</span> <span class="n">num_train_steps</span>  <span class="c1"># Store the total number of training steps</span>
+
+<div class="viewcode-block" id="SequentialAttentionModel.call">
+<a class="viewcode-back" href="../../models.html#models.MLPSequentialAttention.SequentialAttentionModel.call">[docs]</a>
+    <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Forward pass for the model. Applies batch normalization (if enabled), Sequential Attention to input features,</span>
+<span class="sd">        followed by the MLP layers and output prediction layer.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          inputs (Tensor): Input features.</span>
+<span class="sd">          training (bool): Whether the model is in training mode.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          Tensor: The output predictions of the model.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_norm</span><span class="p">:</span>
+            <span class="n">inputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_norm_layer</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="n">training</span><span class="p">)</span>  <span class="c1"># Apply batch normalization</span>
+
+        <span class="n">training_percentage</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">iterations</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_train_steps</span>  <span class="c1"># Calculate training progress</span>
+        <span class="n">feature_weights</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">seqatt</span><span class="p">(</span><span class="n">training_percentage</span><span class="p">)</span>  <span class="c1"># Get feature weights from Sequential Attention</span>
+        <span class="n">inputs</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">feature_weights</span><span class="p">)</span>  <span class="c1"># Apply feature weights to inputs</span>
+        <span class="n">representation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp_model</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>  <span class="c1"># Process inputs through the MLP layers</span>
+        <span class="n">prediction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp_predictor</span><span class="p">(</span><span class="n">representation</span><span class="p">)</span>  <span class="c1"># Generate predictions</span>
+        <span class="k">return</span> <span class="n">prediction</span></div>
+
+
+<div class="viewcode-block" id="SequentialAttentionModel.get_feature_selection_order">
+<a class="viewcode-back" href="../../models.html#models.MLPSequentialAttention.SequentialAttentionModel.get_feature_selection_order">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_feature_selection_order</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retrieves the order of feature selection determined by the Sequential Attention mechanism.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          List[int]: The order in which features were selected based on their importance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">seqatt</span><span class="o">.</span><span class="n">get_feature_selection_order</span><span class="p">()</span></div>
+</div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">SpectraFlow</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">SpectraFlow</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Adrian Wesek.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

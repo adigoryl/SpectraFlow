@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>models.SequentialAttention &#8212; SpectraFlow Feb 2024 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=61cd365c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../_static/documentation_options.js?v=a448a05f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for models.SequentialAttention</h1><div class="highlight"><pre>
+<span></span><span class="c1"># coding=utf-8</span>
+<span class="c1"># Copyright 2022 The Google Research Authors.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;Sequential Attention for Feature Selection.</span>
+
+<span class="sd">This module implements a Sequential Attention mechanism for feature selection as described in</span>
+<span class="sd">https://arxiv.org/abs/2209.14881. It progressively selects features based on their importance</span>
+<span class="sd">calculated through a trainable attention mechanism, optimizing for both feature relevance and</span>
+<span class="sd">compactness in the selected feature set.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+
+
+<div class="viewcode-block" id="SequentialAttention">
+<a class="viewcode-back" href="../../models.html#models.SequentialAttention.SequentialAttention">[docs]</a>
+<span class="k">class</span> <span class="nc">SequentialAttention</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Implements a Sequential Attention mechanism for feature selection.</span>
+
+<span class="sd">    This class defines a module that applies a trainable attention mechanism to sequentially select</span>
+<span class="sd">    a subset of features from a larger set based on their relevance. The selection process is</span>
+<span class="sd">    controlled by a percentage of the training process completed, allowing for dynamic adjustment</span>
+<span class="sd">    of feature importance over time.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">num_candidates</span><span class="p">,</span>
+            <span class="n">num_candidates_to_select</span><span class="p">,</span>
+            <span class="n">num_candidates_to_select_per_step</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">start_percentage</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+            <span class="n">stop_percentage</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;sequential_attention&#39;</span><span class="p">,</span>
+            <span class="n">reset_weights</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes the SequentialAttention module.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          num_candidates: Total number of candidate features.</span>
+<span class="sd">          num_candidates_to_select: Number of features to select.</span>
+<span class="sd">          num_candidates_to_select_per_step: Number of features to select at each step.</span>
+<span class="sd">          start_percentage: Training percentage at which to start feature selection.</span>
+<span class="sd">          stop_percentage: Training percentage at which to stop feature selection.</span>
+<span class="sd">          name: Name of the module.</span>
+<span class="sd">          reset_weights: Whether to reset attention weights after each selection.</span>
+<span class="sd">          **kwargs: Additional keyword arguments.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SequentialAttention</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="n">num_candidates_to_select</span> <span class="o">%</span> <span class="n">num_candidates_to_select_per_step</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="p">(</span>
+            <span class="s1">&#39;num_candidates_to_select must be a multiple of &#39;</span>
+            <span class="s1">&#39;num_candidates_to_select_per_step.&#39;</span>
+        <span class="p">)</span>
+
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">name_scope</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_num_candidates</span> <span class="o">=</span> <span class="n">num_candidates</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_num_candidates_to_select_per_step</span> <span class="o">=</span> <span class="n">num_candidates_to_select_per_step</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_num_steps</span> <span class="o">=</span> <span class="n">num_candidates_to_select</span> <span class="o">//</span> <span class="n">num_candidates_to_select_per_step</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_start_percentage</span> <span class="o">=</span> <span class="n">start_percentage</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_stop_percentage</span> <span class="o">=</span> <span class="n">stop_percentage</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_reset_weights</span> <span class="o">=</span> <span class="n">reset_weights</span>
+
+            <span class="n">init_attention_weights</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span>
+                <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">num_candidates</span><span class="p">],</span> <span class="n">stddev</span><span class="o">=</span><span class="mf">0.00001</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_attention_weights</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span>
+                <span class="n">initial_value</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">init_attention_weights</span><span class="p">,</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="s1">&#39;attention_weights&#39;</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">selected_features</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span>
+                <span class="n">tf</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">num_candidates</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+                <span class="n">trainable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="s1">&#39;selected_features&#39;</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="c1"># --------------  Not a part of original code ------------</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">selected_feature_order</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_num_steps</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span>
+            <span class="n">trainable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;selected_feature_order&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="c1"># -------------------------------------------------------</span>
+
+    <span class="nd">@tf</span><span class="o">.</span><span class="n">Module</span><span class="o">.</span><span class="n">with_name_scope</span>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">training_percentage</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculates and updates attention weights for feature selection.</span>
+
+<span class="sd">        This method computes the attention weights for each feature, selects features based on</span>
+<span class="sd">        the computed weights, and optionally resets weights after selection.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          training_percentage: A float representing the current training progress as a percentage.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          A tensor representing the updated vector of attention weights for all candidates.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">percentage</span> <span class="o">=</span> <span class="p">(</span><span class="n">training_percentage</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start_percentage</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_stop_percentage</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start_percentage</span><span class="p">)</span>
+        <span class="n">curr_index</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">percentage</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_num_steps</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">curr_index</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">curr_index</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_num_steps</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)</span>
+
+        <span class="n">should_train</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">less</span><span class="p">(</span><span class="n">curr_index</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+        <span class="n">num_selected</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">selected_features</span><span class="p">)</span>
+        <span class="n">should_select</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">greater_equal</span><span class="p">(</span><span class="n">curr_index</span><span class="p">,</span> <span class="n">num_selected</span><span class="p">)</span>
+
+        <span class="n">_</span><span class="p">,</span> <span class="n">new_indices</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">top_k</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_softmax_with_mask</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_attention_weights</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">selected_features</span><span class="p">),</span>
+            <span class="n">k</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_num_candidates_to_select_per_step</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">new_indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_k_hot_mask</span><span class="p">(</span><span class="n">new_indices</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_num_candidates</span><span class="p">)</span>
+        <span class="n">new_indices</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cond</span><span class="p">(</span>
+            <span class="n">should_select</span><span class="p">,</span>
+            <span class="k">lambda</span><span class="p">:</span> <span class="n">new_indices</span><span class="p">,</span>
+            <span class="k">lambda</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_num_candidates</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">select_op</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">selected_features</span><span class="o">.</span><span class="n">assign_add</span><span class="p">(</span><span class="n">new_indices</span><span class="p">)</span>
+
+        <span class="c1"># --------------  Not a part of original code ------------</span>
+        <span class="n">track_index_op</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cond</span><span class="p">(</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">less</span><span class="p">(</span><span class="n">num_selected</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_num_steps</span><span class="p">),</span>
+            <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">selected_feature_order</span><span class="o">.</span><span class="n">scatter_nd_update</span><span class="p">(</span>
+                <span class="n">indices</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">num_selected</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span>
+                <span class="n">updates</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">new_indices</span><span class="p">),</span> <span class="n">tf</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span> <span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="p">),</span>
+            <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">selected_feature_order</span>
+        <span class="p">)</span>
+        <span class="c1"># -------------------------------------------------------</span>
+
+        <span class="n">init_attention_weights</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span>
+            <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_num_candidates</span><span class="p">],</span> <span class="n">stddev</span><span class="o">=</span><span class="mf">0.00001</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span>
+        <span class="p">)</span>
+        <span class="n">should_reset</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">should_select</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reset_weights</span><span class="p">)</span>
+        <span class="n">new_weights</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cond</span><span class="p">(</span>
+            <span class="n">should_reset</span><span class="p">,</span>
+            <span class="k">lambda</span><span class="p">:</span> <span class="n">init_attention_weights</span><span class="p">,</span>
+            <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_attention_weights</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">reset_op</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_attention_weights</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">new_weights</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">control_dependencies</span><span class="p">([</span><span class="n">select_op</span><span class="p">,</span> <span class="n">reset_op</span><span class="p">,</span> <span class="n">track_index_op</span><span class="p">]):</span>
+            <span class="n">candidates</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">selected_features</span>
+            <span class="n">softmax</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_softmax_with_mask</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_attention_weights</span><span class="p">,</span> <span class="n">candidates</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">cond</span><span class="p">(</span>
+                <span class="n">should_train</span><span class="p">,</span>
+                <span class="k">lambda</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_num_candidates</span><span class="p">),</span>
+                <span class="k">lambda</span><span class="p">:</span> <span class="n">softmax</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">selected_features</span><span class="p">,</span>
+            <span class="p">)</span>
+
+    <span class="nd">@tf</span><span class="o">.</span><span class="n">Module</span><span class="o">.</span><span class="n">with_name_scope</span>
+    <span class="k">def</span> <span class="nf">_k_hot_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indices</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generates a k-hot mask for the given indices.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          indices: A tensor of indices.</span>
+<span class="sd">          depth: The depth of the one-hot encoding.</span>
+<span class="sd">          dtype: The data type of the resulting tensor.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          A k-hot encoded tensor.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">one_hot</span><span class="p">(</span><span class="n">indices</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="nd">@tf</span><span class="o">.</span><span class="n">Module</span><span class="o">.</span><span class="n">with_name_scope</span>
+    <span class="k">def</span> <span class="nf">_softmax_with_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logits</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Applies softmax function to logits with a mask.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          logits: A tensor containing logits.</span>
+<span class="sd">          mask: A tensor containing a mask to apply to the logits.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          A tensor with softmax applied to the masked logits.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">shifted_logits</span> <span class="o">=</span> <span class="n">logits</span> <span class="o">-</span> <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">reduce_max</span><span class="p">(</span><span class="n">logits</span><span class="p">)</span>
+        <span class="n">exp_shifted_logits</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">shifted_logits</span><span class="p">)</span>
+        <span class="n">masked_exp_shifted_logits</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">exp_shifted_logits</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">divide_no_nan</span><span class="p">(</span>
+            <span class="n">masked_exp_shifted_logits</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span><span class="n">masked_exp_shifted_logits</span><span class="p">)</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="SequentialAttention.get_feature_selection_order">
+<a class="viewcode-back" href="../../models.html#models.SequentialAttention.SequentialAttention.get_feature_selection_order">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_feature_selection_order</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the order in which features were selected.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">selected_feature_order</span></div>
+</div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">SpectraFlow</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">SpectraFlow</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Adrian Wesek.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

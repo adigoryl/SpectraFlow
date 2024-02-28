@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pipeline.LOORFE &#8212; SpectraFlow Feb 2024 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=61cd365c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../_static/documentation_options.js?v=a448a05f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for pipeline.LOORFE</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">from</span> <span class="nn">plots.live_learning</span> <span class="kn">import</span> <span class="n">PlotLearning</span>
+<span class="kn">from</span> <span class="nn">tensorflow</span> <span class="kn">import</span> <span class="n">keras</span>
+
+
+<div class="viewcode-block" id="LeaveOneOutRecursiveFeatureElimination">
+<a class="viewcode-back" href="../../pipeline.html#pipeline.LOORFE.LeaveOneOutRecursiveFeatureElimination">[docs]</a>
+<span class="k">class</span> <span class="nc">LeaveOneOutRecursiveFeatureElimination</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Implements an unbiased Leave-One-Out Recursive Feature Elimination (LOO-RFE) approach for</span>
+<span class="sd">        feature selection in machine learning models. This class leverages cross-validation (CV)</span>
+<span class="sd">        splits to generate feature rankings that exclude the influence of the test subject, thereby</span>
+<span class="sd">        providing an unbiased evaluation of feature importance.</span>
+
+<span class="sd">        The LOO-RFE method iteratively eliminates features based on their impact on model performance,</span>
+<span class="sd">        utilizing a unique approach to ensure that the evaluation of each feature&#39;s importance is not</span>
+<span class="sd">        biased by the inclusion of the test subject&#39;s data in the training set. This is achieved by</span>
+<span class="sd">        constructing feature rankings from subsets of data where the test subject was excluded, using</span>
+<span class="sd">        these unbiased rankings to identify the most relevant features for model prediction.</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">        - data_handler: An object responsible for managing data operations such as scaling and batching,</span>
+<span class="sd">                        ensuring that data is appropriately preprocessed for model training and evaluation.</span>
+<span class="sd">        - model_eval_class: A class that provides methods for model compilation, fitting, and evaluation,</span>
+<span class="sd">                            designed to work with variable numbers of features and target classes.</span>
+<span class="sd">        - num_classes (int): The number of target classes in the dataset, defaulting to 2 for binary classification.</span>
+<span class="sd">        - seed (int, optional): A random seed to ensure reproducibility of results across runs.</span>
+
+<span class="sd">        Methods:</span>
+<span class="sd">        - get_keys_where_value_exists: Retrieves keys from a list of dictionaries where a specified value is present,</span>
+<span class="sd">                                       aiding in the identification of CV splits relevant to each test subject.</span>
+<span class="sd">        - get_top_features: Extracts top features based on their occurrence and average position in ordered rankings,</span>
+<span class="sd">                            utilizing an unbiased ranking list compiled from CV splits excluding the test subject.</span>
+<span class="sd">        - evaluate: Conducts the LOO-RFE evaluation, training models on subsets of features and assessing their performance</span>
+<span class="sd">                    in an unbiased manner, guided by the principle of excluding the test subject&#39;s data from feature ranking</span>
+<span class="sd">                    generation.</span>
+
+<span class="sd">        This class provides a robust framework for feature selection by prioritizing the most impactful features</span>
+<span class="sd">        for model performance while ensuring the evaluation process is unbiased by the test data. The approach</span>
+<span class="sd">        enhances the generalizability and reliability of the selected features, making it a valuable tool for</span>
+<span class="sd">        machine learning tasks that require careful feature selection and validation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_handler</span><span class="p">,</span> <span class="n">model_eval_class</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes the LeaveOneOutRecursiveFeatureElimination class with specified parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_handler</span> <span class="o">=</span> <span class="n">data_handler</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_eval_class</span> <span class="o">=</span> <span class="n">model_eval_class</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span> <span class="o">=</span> <span class="n">num_classes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">seed</span> <span class="o">=</span> <span class="n">seed</span>
+
+<div class="viewcode-block" id="LeaveOneOutRecursiveFeatureElimination.get_keys_where_value_exists">
+<a class="viewcode-back" href="../../pipeline.html#pipeline.LOORFE.LeaveOneOutRecursiveFeatureElimination.get_keys_where_value_exists">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_keys_where_value_exists</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dict_list</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Finds keys in a list of dictionaries where a specified value exists.</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">        - dict_list (list of dict): The list of dictionaries to search.</span>
+<span class="sd">        - X (int): The value to search for within the dictionary values.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">        - keys (list of str): A list of keys where the specified value is present among the values.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Initialize an empty list to store keys</span>
+        <span class="n">keys</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># Iterate over the dictionaries in the list</span>
+        <span class="k">for</span> <span class="nb">dict</span> <span class="ow">in</span> <span class="n">dict_list</span><span class="p">:</span>
+            <span class="c1"># Iterate over each item in the dictionary</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">values</span> <span class="ow">in</span> <span class="nb">dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="c1"># Check if X is in the values</span>
+                <span class="k">if</span> <span class="n">X</span> <span class="ow">in</span> <span class="n">values</span><span class="p">:</span>
+                    <span class="c1"># If X is in the values, add the key to the list</span>
+                    <span class="n">keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">keys</span></div>
+
+
+<div class="viewcode-block" id="LeaveOneOutRecursiveFeatureElimination.get_top_features">
+<a class="viewcode-back" href="../../pipeline.html#pipeline.LOORFE.LeaveOneOutRecursiveFeatureElimination.get_top_features">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_top_features</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ordered_rankings</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">n_features</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Identifies top features based on their occurrence and average position in ordered rankings.</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">        - ordered_rankings (list of lists): A list where each sublist represents feature rankings in an iteration.</span>
+<span class="sd">        - ascending (bool): Determines the sorting order of mean positions. Defaults to False.</span>
+<span class="sd">        - n_features (int, optional): Specifies the number of top features to select. Defaults to selecting all.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">        - top_features (DataFrame): A DataFrame containing statistics of top features including frequency and position metrics.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Copy the input to avoid changing it outside the function</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">ordered_rankings</span><span class="p">)</span>
+
+        <span class="c1"># Get unique features</span>
+        <span class="n">unique_features</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">item</span> <span class="k">for</span> <span class="n">sublist</span> <span class="ow">in</span> <span class="n">data</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">sublist</span><span class="p">))</span>
+
+        <span class="c1"># If n_features is not provided, set it to the number of unique features</span>
+        <span class="k">if</span> <span class="n">n_features</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">n_features</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">unique_features</span><span class="p">)</span>
+
+        <span class="c1"># Prepare a dict to hold index positions of each unique feature</span>
+        <span class="n">index_positions</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">sublist</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sublist</span><span class="p">):</span>
+                <span class="n">index_positions</span><span class="p">[</span><span class="n">item</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># add 1 to the index</span>
+
+        <span class="c1"># Now calculate the statistics for index positions</span>
+        <span class="c1"># Create a DataFrame to store the stats</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">unique_features</span><span class="p">,</span>
+                          <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="s1">&#39;max&#39;</span><span class="p">,</span> <span class="s1">&#39;min&#39;</span><span class="p">,</span> <span class="s1">&#39;Q1&#39;</span><span class="p">,</span> <span class="s1">&#39;Q3&#39;</span><span class="p">,</span> <span class="s1">&#39;frequency&#39;</span><span class="p">])</span>
+
+        <span class="c1"># Iterate over each unique feature</span>
+        <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">unique_features</span><span class="p">:</span>
+            <span class="n">positions</span> <span class="o">=</span> <span class="n">index_positions</span><span class="p">[</span><span class="n">feature</span><span class="p">]</span>
+            <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">feature</span><span class="p">,</span> <span class="s1">&#39;mean&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">positions</span><span class="p">)</span>
+            <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">feature</span><span class="p">,</span> <span class="s1">&#39;max&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">positions</span><span class="p">)</span>
+            <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">feature</span><span class="p">,</span> <span class="s1">&#39;min&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">positions</span><span class="p">)</span>
+            <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">feature</span><span class="p">,</span> <span class="s1">&#39;Q1&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">positions</span><span class="p">,</span> <span class="mi">25</span><span class="p">)</span>
+            <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">feature</span><span class="p">,</span> <span class="s1">&#39;Q3&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">positions</span><span class="p">,</span> <span class="mi">75</span><span class="p">)</span>
+            <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">feature</span><span class="p">,</span> <span class="s1">&#39;frequency&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">positions</span><span class="p">)</span>
+
+        <span class="c1"># Convert &#39;frequency&#39; column to integer</span>
+        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+        <span class="c1"># Select the top features based on the frequency</span>
+        <span class="n">top_features</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">nlargest</span><span class="p">(</span><span class="n">n_features</span><span class="p">,</span> <span class="s1">&#39;frequency&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Order the selected features based on the mean in descending order</span>
+        <span class="n">top_features</span> <span class="o">=</span> <span class="n">top_features</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="n">ascending</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">top_features</span></div>
+
+
+<div class="viewcode-block" id="LeaveOneOutRecursiveFeatureElimination.evaluate">
+<a class="viewcode-back" href="../../pipeline.html#pipeline.LOORFE.LeaveOneOutRecursiveFeatureElimination.evaluate">[docs]</a>
+    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">train_index</span><span class="p">,</span> <span class="n">test_index</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">num_selected_features</span><span class="p">,</span> <span class="n">sample_num</span><span class="p">,</span> <span class="n">subs_in_val_per_sample</span><span class="p">,</span> <span class="n">selected_feature_indices</span><span class="p">,</span> <span class="n">scaler_obj</span><span class="p">,</span> <span class="n">save_path</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Performs the LOO-RFE evaluation process, training models on subsets of features and assessing their performance.</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">        - data: The dataset containing features and labels.</span>
+<span class="sd">        - train_index: Indices for the training data.</span>
+<span class="sd">        - test_index: Indices for the test data.</span>
+<span class="sd">        - batch_size: The size of batches for training and testing.</span>
+<span class="sd">        - num_selected_features: The number of features to select in the current iteration.</span>
+<span class="sd">        - sample_num: Identifier for the current sample or iteration.</span>
+<span class="sd">        - subs_in_val_per_sample: Subsets involved in validation for each sample.</span>
+<span class="sd">        - selected_feature_indices: Indices of features selected in the current iteration.</span>
+<span class="sd">        - scaler_obj: An instance of a scaler for data normalization.</span>
+<span class="sd">        - save_path: Path where evaluation results and plots are saved.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">        - A DataFrame containing evaluation results across different feature subsets.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">tf</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">set_seed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">seed</span><span class="p">)</span>
+        <span class="n">Xs</span><span class="p">,</span> <span class="n">ys</span> <span class="o">=</span> <span class="n">data</span>
+
+        <span class="c1"># Identify unbiased rankings for the test index</span>
+        <span class="n">indexes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_keys_where_value_exists</span><span class="p">(</span><span class="n">subs_in_val_per_sample</span><span class="p">,</span> <span class="n">test_index</span><span class="p">)</span>
+        <span class="n">unbiased_rankings</span> <span class="o">=</span> <span class="p">[</span><span class="n">selected_feature_indices</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">indexes</span><span class="p">]</span>
+
+        <span class="c1"># Merge the rankings into one accordingly to selection frequency and mean position</span>
+        <span class="n">top_ranking</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_top_features</span><span class="p">(</span><span class="n">ordered_rankings</span><span class="o">=</span><span class="n">unbiased_rankings</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">n_features</span><span class="o">=</span><span class="n">num_selected_features</span><span class="p">)</span>
+
+        <span class="c1"># Select the data accordingly to the split</span>
+        <span class="n">x_train</span><span class="p">,</span> <span class="n">x_test</span> <span class="o">=</span> <span class="n">Xs</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">train_index</span><span class="p">],</span> <span class="n">Xs</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">test_index</span><span class="p">]</span>
+        <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">ys</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">train_index</span><span class="p">],</span> <span class="n">ys</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">test_index</span><span class="p">]</span>
+
+        <span class="c1"># Scale the data using the provided scaler, if any</span>
+        <span class="k">if</span> <span class="n">scaler_obj</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">scaler</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">scaler_obj</span><span class="p">)</span>
+            <span class="n">x_train_scaled</span> <span class="o">=</span> <span class="n">scaler</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">x_train</span><span class="p">)</span>
+            <span class="n">x_test_scaled</span> <span class="o">=</span> <span class="n">scaler</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">x_test</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">x_train_scaled</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">x_train</span><span class="p">)</span>
+            <span class="n">x_test_scaled</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">x_test</span><span class="p">)</span>
+
+        <span class="c1"># Transform datasets</span>
+        <span class="n">ds_train</span><span class="p">,</span> <span class="n">ds_test</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_handler</span><span class="o">.</span><span class="n">create_batched_datasets</span><span class="p">(</span><span class="n">x_train_scaled</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">x_test_scaled</span><span class="p">,</span> <span class="n">y_test</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
+
+        <span class="c1"># Define the scoring metrics</span>
+        <span class="n">f1</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">F1Score</span><span class="p">(</span><span class="n">average</span><span class="o">=</span><span class="s2">&quot;macro&quot;</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;f1_score&#39;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">auc</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">AUC</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;auc_score&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+        <span class="n">features_in_selection_order</span> <span class="o">=</span> <span class="n">top_ranking</span><span class="o">.</span><span class="n">index</span>
+
+        <span class="n">loo_rfe_res</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">features_in_selection_order</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">ds_train_selected</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_handler</span><span class="o">.</span><span class="n">reduce_data_to_specific_features</span><span class="p">(</span><span class="n">ds_train</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">features_in_selection_order</span><span class="p">))</span>
+            <span class="n">ds_test_selected</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_handler</span><span class="o">.</span><span class="n">reduce_data_to_specific_features</span><span class="p">(</span><span class="n">ds_test</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">features_in_selection_order</span><span class="p">))</span>
+            <span class="c1"># Create and train the model</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_eval_class</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">features_in_selection_order</span><span class="p">),</span> <span class="p">[</span><span class="n">f1</span><span class="p">,</span> <span class="n">auc</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)</span>
+            <span class="c1"># model = MLPEval(len(features_in_selection_order), [f1, auc], self.num_classes)</span>
+
+            <span class="n">loo_rfe_eval_train_plots_save_path</span> <span class="o">=</span> <span class="n">save_path</span> <span class="o">+</span> <span class="s2">&quot;/loo_rfe_eval_training_progress_plots/</span><span class="si">{}</span><span class="s2">_features&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">features_in_selection_order</span><span class="p">))</span>
+            <span class="n">loo_rfe_title</span> <span class="o">=</span> <span class="s2">&quot;LOO RFE - </span><span class="si">{}</span><span class="s2"> features&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">features_in_selection_order</span><span class="p">))</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">loo_rfe_eval_train_plots_save_path</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">save_eval_plot_as</span> <span class="o">=</span> <span class="n">loo_rfe_eval_train_plots_save_path</span> <span class="o">+</span> <span class="s2">&quot;/loo_rfe_eval_train_sample-</span><span class="si">{}</span><span class="s2">.png&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">sample_num</span><span class="p">)</span>
+
+            <span class="n">early_stop</span> <span class="o">=</span> <span class="n">keras</span><span class="o">.</span><span class="n">callbacks</span><span class="o">.</span><span class="n">EarlyStopping</span><span class="p">(</span><span class="n">monitor</span><span class="o">=</span><span class="s1">&#39;val_loss&#39;</span><span class="p">,</span> <span class="n">patience</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+
+            <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
+                <span class="n">ds_train_selected</span><span class="p">,</span>
+                <span class="n">epochs</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+                <span class="n">validation_data</span><span class="o">=</span><span class="n">ds_test_selected</span><span class="p">,</span>
+                <span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">early_stop</span><span class="p">,</span> <span class="n">PlotLearning</span><span class="p">(</span><span class="n">loo_rfe_title</span><span class="p">,</span> <span class="n">save_eval_plot_as</span><span class="p">)]</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Evaluate the model on the test set</span>
+            <span class="n">rfe_test_loss</span><span class="p">,</span> <span class="n">rfe_test_f1</span><span class="p">,</span> <span class="n">rfe_test_auc</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">ds_test_selected</span><span class="p">)</span>
+
+            <span class="n">rfe_results</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">rfe_results</span><span class="p">[</span><span class="s2">&quot;rfe_val_loss_shallow&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">rfe_test_loss</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+            <span class="n">rfe_results</span><span class="p">[</span><span class="s2">&quot;subject_num&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sample_num</span>
+            <span class="n">rfe_results</span><span class="p">[</span><span class="s2">&quot;RFE_step&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">features_in_selection_order</span><span class="p">)</span>
+
+            <span class="c1"># Get the probabilities of positive class</span>
+            <span class="n">y_pred</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">ds_test_selected</span><span class="p">)</span>
+
+            <span class="c1"># model returns probabilities for both classes (0 and 1). So we use the probabilities for the positive class (usually class 1) when calculating the ROC AUC score later</span>
+            <span class="n">rfe_results</span><span class="p">[</span><span class="s2">&quot;y_pos_pred_probability&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">y_pred</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">rfe_results</span><span class="p">[</span><span class="s2">&quot;true_label&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">y_test</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+            <span class="c1"># Get the index of the highest value in an array as the predicted label</span>
+            <span class="n">rfe_results</span><span class="p">[</span><span class="s2">&quot;y_pred&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+            <span class="n">loo_rfe_res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rfe_results</span><span class="p">)</span>
+
+            <span class="c1"># Remove features that were selected last and repeat</span>
+            <span class="n">features_in_selection_order</span> <span class="o">=</span> <span class="n">features_in_selection_order</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">loo_rfe_res</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">SpectraFlow</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">SpectraFlow</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Adrian Wesek.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

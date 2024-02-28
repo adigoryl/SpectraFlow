@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>models.MLP &#8212; SpectraFlow Feb 2024 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=61cd365c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../_static/documentation_options.js?v=a448a05f"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for models.MLP</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+
+
+<div class="viewcode-block" id="MLPModel2">
+<a class="viewcode-back" href="../../models.html#models.MLP.MLPModel2">[docs]</a>
+<span class="k">class</span> <span class="nc">MLPModel2</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A customizable Multi-Layer Perceptron (MLP) model for deep learning.</span>
+
+<span class="sd">    This class allows for the creation of a flexible MLP architecture for either classification</span>
+<span class="sd">    or regression tasks. It supports features such as batch normalization, dropout for regularization,</span>
+<span class="sd">    and dynamic learning rate decay.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        batch_norm_layer (tf.keras.layers.BatchNormalization): Optional batch normalization layer.</span>
+<span class="sd">        batch_norm (bool): Flag indicating whether batch normalization is to be used.</span>
+<span class="sd">        mlp_model (tf.keras.Sequential): Sequential model representing the MLP layers.</span>
+<span class="sd">        mlp_predictor (tf.keras.layers.Dense): Final dense layer for prediction.</span>
+<span class="sd">        optimizer (tf.keras.optimizers.Adam): Optimizer with a decaying learning rate.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">layer_sequence</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+            <span class="n">is_classification</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">num_classes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span>
+            <span class="n">decay_steps</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
+            <span class="n">decay_rate</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span>
+            <span class="n">alpha</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">batch_norm</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">dropout_rate</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes the MLPModel2 instance.</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">            layer_sequence (list, optional): List of integers defining the number of units in each layer.</span>
+<span class="sd">            is_classification (bool): True if the model is used for classification, False for regression.</span>
+<span class="sd">            num_classes (int, optional): Number of classes for classification. Required if is_classification=True.</span>
+<span class="sd">            learning_rate (float): Initial learning rate for the optimizer.</span>
+<span class="sd">            decay_steps (int): Number of steps before applying one decay step.</span>
+<span class="sd">            decay_rate (float): Decay rate for the learning rate.</span>
+<span class="sd">            alpha (float): Negative slope coefficient for LeakyReLU.</span>
+<span class="sd">            batch_norm (bool): Whether to include a batch normalization layer.</span>
+<span class="sd">            dropout_rate (float): Fraction of the input units to drop.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="c1"># Initialize batch normalization layer if enabled.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">batch_norm</span> <span class="o">=</span> <span class="n">batch_norm</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_norm</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">batch_norm_layer</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">BatchNormalization</span><span class="p">()</span>
+
+        <span class="c1"># Create the MLP layers based on the provided layer sequence.</span>
+        <span class="n">mlp_sequence</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="n">layer_sequence</span><span class="p">:</span>
+            <span class="n">mlp_sequence</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">LeakyReLU</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">)))</span>
+            <span class="n">mlp_sequence</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">dropout_rate</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">mlp_model</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="n">mlp_sequence</span><span class="p">)</span>
+
+        <span class="c1"># Configure the output layer for classification or regression.</span>
+        <span class="k">if</span> <span class="n">is_classification</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mlp_predictor</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">num_classes</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s2">&quot;softmax&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float32&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mlp_predictor</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float32&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Set up the optimizer with exponential decay for the learning rate.</span>
+        <span class="n">lr_schedule</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">optimizers</span><span class="o">.</span><span class="n">schedules</span><span class="o">.</span><span class="n">ExponentialDecay</span><span class="p">(</span>
+            <span class="n">initial_learning_rate</span><span class="o">=</span><span class="n">learning_rate</span><span class="p">,</span>
+            <span class="n">decay_steps</span><span class="o">=</span><span class="n">decay_steps</span><span class="p">,</span>
+            <span class="n">decay_rate</span><span class="o">=</span><span class="n">decay_rate</span><span class="p">,</span>
+            <span class="n">staircase</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">optimizers</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">learning_rate</span><span class="o">=</span><span class="n">lr_schedule</span><span class="p">)</span>
+
+<div class="viewcode-block" id="MLPModel2.call">
+<a class="viewcode-back" href="../../models.html#models.MLP.MLPModel2.call">[docs]</a>
+    <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Performs a forward pass through the model.</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">            inputs (tensor): Input data.</span>
+<span class="sd">            training (bool): Whether the call is during training (affects dropout and batch normalization).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The model&#39;s prediction output.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_norm</span><span class="p">:</span>
+            <span class="n">inputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_norm_layer</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="n">training</span><span class="p">)</span>
+
+        <span class="n">representation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp_model</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="n">training</span><span class="p">)</span>
+        <span class="n">prediction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp_predictor</span><span class="p">(</span><span class="n">representation</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">prediction</span></div>
+</div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">SpectraFlow</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">SpectraFlow</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Adrian Wesek.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
