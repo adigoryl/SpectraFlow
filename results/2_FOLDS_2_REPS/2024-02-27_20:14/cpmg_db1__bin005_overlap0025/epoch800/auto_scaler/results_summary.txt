@@ -1,0 +1,17 @@
+Mean values:
+val_f1_shallow                    0.4705
+val_loss_shallow                  0.8089
+val_auc_shallow                   0.5970
+val_positive_precision_shallow    0.1842
+val_positive_recall_shallow       0.3329
+val_negative_precision_shallow    0.7351
+val_negative_recall_shallow       0.7010
+
+Standard deviation values:
+val_f1_shallow                    0.0432
+val_loss_shallow                  0.1126
+val_auc_shallow                   0.0896
+val_positive_precision_shallow    0.1325
+val_positive_recall_shallow       0.2991
+val_negative_precision_shallow    0.0345
+val_negative_recall_shallow       0.0247
