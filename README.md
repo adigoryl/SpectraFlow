@@ -99,10 +99,10 @@ Afterwards, modify any variables or paths in the script according to your cluste
 ./run_spectraflow.sh
 ```
 
-### Documentation
+## Documentation
 View code [documentation](https://adigoryl.github.io/SpectraFlow/Docs/build/html/py-modindex.html)
 
-### Contributing
+## Contributing
 
 If you would like to contribute to the project, please read `CONTRIBUTING.md` (if you have this file) for details on our code of conduct, and the process for submitting pull requests to us.
 
