@@ -1,7 +1,11 @@
 
-# Project Name
+# SpectraFlow
 
-Brief description of your project.
+This project contains the model and experimental implementation as detailed in the publication:
+
+"SpectraFlow: A Novel Feature Selection Framework for Overcoming Challenges in 1D NMR Spectroscopy"
+
+The SpectraFlow framework synergistically combines denoising, PCA-binning, sequential attention, and an MLP model to address challenges specific to feature selection on 1D NMR data.
 
 ## Getting Started
 
@@ -64,20 +68,44 @@ pip install -r requirements.txt
 ```
 
 ### Running the Project
+After setting up the environment, you can run the project using the provided shell scripts:
 
-Provide instructions on how to run your project after setting up the environment.
+Running Preprocessing
+
+Before running run_preprocess.sh, ensure it is executable:
 
 ```bash
-python your_script.py
+chmod +x run_preprocess.sh
+```
+
+Then, you can run the preprocessing script which should not take longer than a minute on a normal machine:
+
+```bash
+./run_preprocess.sh
+```
+Remember to check and modify any variables or paths inside the script as necessary for your environment.
+
+Running SpectraFlow Analysis
+
+For run_spectraflow.sh, it is recommended to use a cluster of CPU machines due to the intensive computational resources required. First, make the script executable:
+
+```bash
+chmod +x run_spectraflow.sh
+```
+
+Afterwards, modify any variables or paths in the script according to your cluster environment and input data. Then execute:
+
+```bash
+./run_spectraflow.sh
 ```
 
 ### Contributing
 
 If you would like to contribute to the project, please read `CONTRIBUTING.md` (if you have this file) for details on our code of conduct, and the process for submitting pull requests to us.
 
-## Authors
+## Code Authors
 
-- **Your Name** - *Initial work* - [YourGithubProfile](https://github.com/YourGithubProfile)
+- **Adrian Wesek** - [adigoryl](https://github.com/adigoryl)
 
 See also the list of [contributors](https://github.com/yourproject/contributors) who participated in this project.
 
@@ -85,8 +113,3 @@ See also the list of [contributors](https://github.com/yourproject/contributors)
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
 
-## Acknowledgments
-
-- Hat tip to anyone whose code was used
-- Inspiration
-- etc
