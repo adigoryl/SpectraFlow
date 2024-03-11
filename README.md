@@ -103,7 +103,7 @@ Afterwards, modify any variables or paths in the script according to your cluste
 View code [documentation](https://adigoryl.github.io/SpectraFlow/Docs/build/html/py-modindex.html)
 
 ## Code as a part of the publication
-View publication [documentation](https://adigoryl.github.io/SpectraFlow/Docs/Oxford_Bioinformatics__SpectraFlow version 1.0.pdf)
+View publication [documentation](https://adigoryl.github.io/SpectraFlow/Docs/Oxford_Bioinformatics__SpectraFlow_v1.pdf)
 
 ## Contributing
 
